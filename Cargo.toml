@@ -1,0 +1,21 @@
+[package]
+name = "muskitty-css-tokenizer"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+license = "Apache-2.0"
+description = "CSS Syntax Module Level 3 tokenizer (§4.3) extracted from muskitty-css"
+repository = "https://github.com/Ink-dark/MusKitty"
+homepage = "https://github.com/Ink-dark/MusKitty"
+documentation = "https://docs.rs/muskitty-css-tokenizer"
+keywords = ["css", "tokenizer", "syntax", "parser", "web"]
+categories = ["parser-implementations", "web-programming"]
+authors = ["MusCat / MusKitty Bit-Torch Community"]
+
+[dependencies]
+
+[dev-dependencies]
+
+# 防止被父 workspace (D:\Muskitty\Cargo.toml) 误吸入。
+# tokenizer 作为独立 git 仓库剥离，有自己的 workspace 根。
+[workspace]
