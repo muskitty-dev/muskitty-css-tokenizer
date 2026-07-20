@@ -1,5 +1,7 @@
 # muskitty-css-tokenizer
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 [![crates.io](https://img.shields.io/crates/v/muskitty-css-tokenizer.svg)](https://crates.io/crates/muskitty-css-tokenizer)
 [![Documentation](https://docs.rs/muskitty-css-tokenizer/badge.svg)](https://docs.rs/muskitty-css-tokenizer)
 [![License](https://img.shields.io/crates/l/muskitty-css-tokenizer.svg)](https://github.com/muskitty-dev/muskitty-css-tokenizer/blob/main/LICENSE)
