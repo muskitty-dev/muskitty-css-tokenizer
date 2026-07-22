@@ -1033,6 +1033,10 @@ impl Tokenizer for CssTokenizer {
     fn set_unicode_ranges_allowed(&mut self, allowed: bool) {
         self.unicode_ranges_allowed = allowed;
     }
+
+    fn position(&self) -> usize {
+        self.pos
+    }
 }
 
 // ── Test helpers exposed for unit tests in this file ──────────────────

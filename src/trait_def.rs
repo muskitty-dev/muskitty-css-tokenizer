@@ -63,4 +63,31 @@ pub trait Tokenizer {
     /// normal circumstances — the flag is set to `true` only when parsing the
     /// value of the `@font-face/unicode-range` descriptor.
     fn set_unicode_ranges_allowed(&mut self, allowed: bool);
+
+    /// 当前 position（tokenizer 内部的字符索引，0-based）。
+    ///
+    /// 用于 [`next_token_with_span`](Self::next_token_with_span) 追踪 token
+    /// 的 source range。默认实现返回 0；具体 tokenizer 应覆盖。
+    ///
+    /// 注意：对 `CssTokenizer` 而言，这是 `Vec<char>` 上的 **char 索引**，
+    /// 不是 byte offset。调用方需要自行将 char 索引映射到 byte offset。
+    fn position(&self) -> usize {
+        0
+    }
+
+    /// 返回下一个 token 及其在输入流中的字符范围 `[start, end)`。
+    ///
+    /// 默认实现基于 [`position`](Self::position) + [`next_token`](Self::next_token)：
+    /// 记录消费前的 position 作为 `start`，消费后的 position 作为 `end`。
+    /// 具体 tokenizer 可覆盖以获得更精确的 span。
+    ///
+    /// 返回的 range 是 **char 索引**（不是 byte offset），与
+    /// [`position`](Self::position) 一致。EOF token 的 span 是空 range
+    /// `pos..pos`（`next_token` 在 EOF 后不推进 position）。
+    fn next_token_with_span(&mut self) -> Option<(Token, std::ops::Range<usize>)> {
+        let start = self.position();
+        let token = self.next_token()?;
+        let end = self.position();
+        Some((token, start..end))
+    }
 }
