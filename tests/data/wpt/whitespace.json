@@ -1,0 +1,130 @@
+{
+ "source": "css/css-syntax/whitespace.html",
+ "cases": [
+  {
+   "kind": "is-whitespace",
+   "codepoint": 9
+  },
+  {
+   "kind": "is-whitespace",
+   "codepoint": 10
+  },
+  {
+   "kind": "is-whitespace",
+   "codepoint": 12
+  },
+  {
+   "kind": "is-whitespace",
+   "codepoint": 13
+  },
+  {
+   "kind": "is-whitespace",
+   "codepoint": 32
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 11
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 133
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 160
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 5760
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8192
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8193
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8194
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8195
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8196
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8197
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8198
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8199
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8200
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8201
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8202
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 10536
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8233
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8239
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8287
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 12288
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 6158
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8203
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8204
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8205
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 8288
+  },
+  {
+   "kind": "not-whitespace",
+   "codepoint": 65279
+  }
+ ],
+ "note": "harness tokenizes '.a<char>b': CSS whitespace must split the idents (one Whitespace token); other Unicode whitespace must not"
+}

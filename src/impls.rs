@@ -842,10 +842,15 @@ impl CssTokenizer {
     ///
     /// Precondition: the `\` has been consumed. Returns true if the next
     /// code point forms a valid escape with the consumed `\` (i.e. the
-    /// next code point is not a newline and not EOF).
+    /// next code point is not a newline).
+    ///
+    /// §4.3.8: EOF as the second code point returns **true** — only a
+    /// newline invalidates the escape. The escaped-EOF path then hits
+    /// §4.3.7's EOF branch and yields U+FFFD (the WPT
+    /// css/css-syntax/escaped-eof.html semantics).
     fn is_valid_escape_next(&self) -> bool {
         match self.peek(0) {
-            None => false,
+            None => true,
             Some('\n') => false,
             Some(_) => true,
         }
@@ -895,7 +900,8 @@ impl CssTokenizer {
             return false;
         }
         match self.peek(offset + 1) {
-            None => false,
+            // §4.3.8: EOF as the second code point is a valid escape.
+            None => true,
             Some('\n') => false,
             Some(_) => true,
         }
@@ -933,10 +939,10 @@ impl CssTokenizer {
 
 /// §4.2 Whether `c` is an ident-start code point.
 ///
-/// An ident-start code point is an ASCII letter, a non-ASCII code point
-/// (U+0080 or higher), or U+005F LOW LINE (`_`).
+/// An ident-start code point is an ASCII letter, a non-ASCII ident code
+/// point, or U+005F LOW LINE (`_`).
 fn is_ident_start_code_point(c: char) -> bool {
-    matches!(c, 'A'..='Z' | 'a'..='z' | '_' | '\u{0080}'..=char::MAX)
+    matches!(c, 'A'..='Z' | 'a'..='z' | '_') || is_non_ascii_ident_code_point(c)
 }
 
 /// §4.2 Whether `c` is an ident code point (allowed after the first).
@@ -944,7 +950,30 @@ fn is_ident_start_code_point(c: char) -> bool {
 /// An ident code point is an ident-start code point, or an ASCII digit,
 /// or U+002D HYPHEN-MINUS (`-`).
 fn is_ident_code_point(c: char) -> bool {
-    matches!(c, 'A'..='Z' | 'a'..='z' | '0'..='9' | '_' | '-' | '\u{0080}'..=char::MAX)
+    matches!(c, '0'..='9' | '-') || is_ident_start_code_point(c)
+}
+
+/// §4.2 Whether `c` is a non-ASCII ident code point.
+///
+/// The spec defines these as an explicit allowlist of ranges (aligned
+/// with the code points allowed in HTML custom element names) — *not*
+/// "any code point ≥ U+0080". Notably U+0080–U+00B6 and U+00B8–U+00BF
+/// are excluded (WPT css/css-syntax/non-ascii-codepoints.html).
+fn is_non_ascii_ident_code_point(c: char) -> bool {
+    matches!(c,
+        '\u{00B7}'
+        | '\u{00C0}'..='\u{00D6}'
+        | '\u{00D8}'..='\u{00F6}'
+        | '\u{00F8}'..='\u{037D}'
+        | '\u{037F}'..='\u{1FFF}'
+        | '\u{200C}' | '\u{200D}'
+        | '\u{203F}' | '\u{2040}'
+        | '\u{2070}'..='\u{218F}'
+        | '\u{2C00}'..='\u{2FEF}'
+        | '\u{3001}'..='\u{D7FF}'
+        | '\u{F900}'..='\u{FDCF}'
+        | '\u{FDF0}'..='\u{FFFD}'
+        | '\u{10000}'..=char::MAX)
 }
 
 /// §4.2 Whether `c` is a digit (ASCII 0-9).
@@ -997,6 +1026,8 @@ fn preprocess_input(s: &str) -> Vec<char> {
                 out.push('\n');
             }
             '\u{000C}' => out.push('\n'),
+            // §5.3: NULL is replaced with U+FFFD during preprocessing.
+            '\u{0000}' => out.push('\u{FFFD}'),
             _ => out.push(c),
         }
     }
@@ -1339,12 +1370,15 @@ mod tests {
     }
 
     #[test]
-    fn backslash_alone_is_delim() {
-        // §4.3.1: `\` not followed by valid escape (EOF or newline) →
-        // <delim-token>
+    fn backslash_at_eof_yields_fffd_ident() {
+        // §4.3.8: EOF as the second code point is a valid escape;
+        // §4.3.7: escaped-EOF returns U+FFFD. So a lone `\` at EOF
+        // produces an <ident-token> whose value is U+FFFD (WPT
+        // css/css-syntax/escaped-eof.html: "Escaped EOF turns into a
+        // U+FFFD in an ident token").
         let tokens = CssTokenizer::collect("\\");
         assert_eq!(tokens.len(), 1);
-        assert!(matches!(tokens[0], Token::Delim('\\')));
+        assert_eq!(tokens[0], Token::Ident("\u{FFFD}".to_string()));
     }
 
     #[test]

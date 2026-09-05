@@ -1,0 +1,31 @@
+{
+ "source": "css/css-syntax/input-preprocessing.html",
+ "cases": [
+  {
+   "kind": "ident",
+   "input": "foo\u0000",
+   "value": "foo�"
+  },
+  {
+   "kind": "ident",
+   "input": "f\u0000oo",
+   "value": "f�oo"
+  },
+  {
+   "kind": "ident",
+   "input": "\u0000foo",
+   "value": "�foo"
+  },
+  {
+   "kind": "ident",
+   "input": "\u0000",
+   "value": "�"
+  },
+  {
+   "kind": "ident",
+   "input": "\u0000\u0000\u0000",
+   "value": "���"
+  }
+ ],
+ "note": "NULL becomes U+FFFD (surrogate cases skipped: lone surrogates are unrepresentable in Rust str). Upstream asserts selectorText round-trip; ported at ident-token level"
+}

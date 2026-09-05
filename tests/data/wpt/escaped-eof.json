@@ -1,0 +1,27 @@
+{
+ "source": "css/css-syntax/escaped-eof.html",
+ "cases": [
+  {
+   "kind": "ident",
+   "input": "foo\\",
+   "value": "foo�"
+  },
+  {
+   "kind": "dimension",
+   "input": "1foo\\",
+   "value": "1",
+   "unit": "foo�"
+  },
+  {
+   "kind": "url",
+   "input": "url(foo\\",
+   "value": "foo�"
+  },
+  {
+   "kind": "string",
+   "input": "\"foo\\",
+   "value": "foo"
+  }
+ ],
+ "note": "input is the declaration value text (upstream: --foo:<value>); WPT asserts CSSOM value — ported at token level; FFFD written literally"
+}

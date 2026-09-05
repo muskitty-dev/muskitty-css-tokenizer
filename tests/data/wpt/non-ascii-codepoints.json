@@ -1,0 +1,226 @@
+{
+ "source": "css/css-syntax/non-ascii-codepoints.html",
+ "cases": [
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 183
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 192
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 203
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 214
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 216
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 231
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 246
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 248
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 570
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 893
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 895
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 4543
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8191
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8204
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8205
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8255
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8256
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8304
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8447
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 8591
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 11264
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 11767
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 12271
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 12289
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 33792
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 55295
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 63744
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 64359
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 64975
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 65008
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 65270
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 65533
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 65536
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 98303
+  },
+  {
+   "kind": "valid-ident-char",
+   "codepoint": 131071
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 128
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 191
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 215
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 247
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 894
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 8192
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 8203
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 8206
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 8254
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 8257
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 8303
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 8592
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 11263
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 12272
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 12288
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 63743
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 64976
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 65007
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 65534
+  },
+  {
+   "kind": "not-ident-char",
+   "codepoint": 65535
+  }
+ ],
+ "note": "harness tokenizes 'f<char>oo': valid non-ASCII ident char must stay inside one Ident token; invalid must split (Ident 'f' then non-ident token). Upstream [0x203F,0x2040][0x2070,0x218F] is missing a comma (upstream bug); both ranges are tested per the spec intent"
+}

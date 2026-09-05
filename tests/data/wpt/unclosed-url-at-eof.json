@@ -1,0 +1,16 @@
+{
+ "source": "css/css-syntax/unclosed-url-at-eof.html",
+ "cases": [
+  {
+   "kind": "url",
+   "input": "url(foo",
+   "value": "foo"
+  },
+  {
+   "kind": "url",
+   "input": "url(",
+   "value": ""
+  }
+ ],
+ "note": "unclosed url token at EOF is valid"
+}

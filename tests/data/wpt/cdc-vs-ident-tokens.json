@@ -1,0 +1,15 @@
+{
+ "source": "css/css-syntax/cdc-vs-ident-tokens.html",
+ "cases": [
+  {
+   "kind": "cdc",
+   "input": "-->"
+  },
+  {
+   "kind": "ident",
+   "input": "--foo",
+   "value": "--foo"
+  }
+ ],
+ "note": "upstream asserts the stylesheet '-->\n\n--foo { }' has selector '--foo'; the stylesheet-level part is ported in css-parser, the token distinction here"
+}
