@@ -157,16 +157,45 @@ pub enum HashType {
 ///
 /// Per §4.3.13 "Consume a number", the numeric value is parsed as either
 /// an integer or a floating-point value, and a flag records which kind
-/// was found. The sign is included in the value.
+/// was found. The sign is included in the value; `has_sign` additionally
+/// records whether the source wrote one.
+///
+/// `has_sign` exists because grammars distinguish `<signed-integer>` from
+/// `<signless-integer>` — e.g. the An+B microgrammar (CSS Syntax §7)
+/// accepts `n + 5` and `n- 5` but rejects `n 5` and `n- +5`, and the two
+/// integers are otherwise token-for-token identical. §4.3.13 step 7
+/// returns the sign for exactly this reason; the tokenizer used to drop it.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Numeric {
-    /// The parsed numeric value.
+    /// The parsed numeric value (sign included, e.g. `-5` → `-5.0`).
     pub value: f64,
     /// Whether the source representation had a `.` or scientific-notation
     /// exponent, making it a "number" rather than an "integer". Per
     /// §4.3.13 this flag is set when the number's representation includes
     /// a fractional component or an `e`/`E` exponent.
     pub is_integer: bool,
+    /// Whether the source representation carried an explicit leading
+    /// `+` or `-` (the sign character of §4.3.13 step 7).
+    ///
+    /// Note: [`Display`](fmt::Display) prints the value only, so a signed
+    /// token serializes without its `+` (pre-existing behavior; the flag
+    /// is for grammar matching).
+    pub has_sign: bool,
+}
+
+impl Numeric {
+    /// A signless numeric value (no explicit `+`/`-` in the source).
+    ///
+    /// Convenience constructor for callers that synthesize values
+    /// (tests, computed-value pipelines); the tokenizer itself uses the
+    /// struct literal so it can pass the sign it consumed.
+    pub const fn new(value: f64, is_integer: bool) -> Self {
+        Self {
+            value,
+            is_integer,
+            has_sign: false,
+        }
+    }
 }
 
 impl fmt::Display for Numeric {

@@ -367,8 +367,12 @@ impl CssTokenizer {
     /// 3. Else if next is `%` → percentage-token (consume `%`).
     /// 4. Else → number-token.
     fn consume_a_numeric_token(&mut self) -> Token {
-        let (value, is_integer) = self.consume_a_number();
-        let numeric = Numeric { value, is_integer };
+        let (value, is_integer, has_sign) = self.consume_a_number();
+        let numeric = Numeric {
+            value,
+            is_integer,
+            has_sign,
+        };
         // §4.3.3 L1019-1029: dimension
         if self.would_start_ident_sequence_at(0) {
             let unit = self.consume_an_ident_sequence();
@@ -385,10 +389,12 @@ impl CssTokenizer {
 
     /// §4.3.13 (L1415-1483) Consume a number.
     ///
-    /// Returns `(value, is_integer)` where `is_integer` is true when the
-    /// source representation had no fractional part and no exponent (type
-    /// "integer"), false when it had either (type "number"). The sign is
-    /// included in `value`.
+    /// Returns `(value, is_integer, has_sign)` where `is_integer` is true when
+    /// the source representation had no fractional part and no exponent (type
+    /// "integer"), false when it had either (type "number"), and `has_sign`
+    /// records whether a `+`/`-` was written (§4.3.13 step 7 returns the sign;
+    /// grammars such as An+B need it to tell `<signed-integer>` from
+    /// `<signless-integer>`).
     ///
     /// Per §4.3.13:
     /// 1. type = "integer"; number_part = ""; exponent_part = "".
@@ -399,14 +405,16 @@ impl CssTokenizer {
     ///    optional sign, digits into exponent_part; type = "number".
     /// 6. value = parse number_part; if exponent_part non-empty, value *= 10^exp.
     /// 7. Return value, type, sign.
-    fn consume_a_number(&mut self) -> (f64, bool) {
+    fn consume_a_number(&mut self) -> (f64, bool, bool) {
         let mut type_is_number = false;
         let mut number_part = String::new();
         let mut exponent_part = String::new();
 
         // §4.3.13 L1436-1440: sign
+        let mut has_sign = false;
         if self.peek(0) == Some('+') || self.peek(0) == Some('-') {
             number_part.push(self.consume().unwrap());
+            has_sign = true;
         }
 
         // §4.3.13 L1442-1444: integer digits
@@ -466,7 +474,7 @@ impl CssTokenizer {
             value *= 10.0f64.powi(exp);
         }
 
-        (value, !type_is_number)
+        (value, !type_is_number, has_sign)
     }
 
     /// §4.3.4 (L1045-1078) Consume an ident-like token.
@@ -1562,7 +1570,8 @@ mod tests {
             tokens[0],
             Token::Number(Numeric {
                 value: 42.0,
-                is_integer: true
+                is_integer: true,
+                has_sign: false
             })
         );
     }
@@ -1575,7 +1584,8 @@ mod tests {
             tokens[0],
             Token::Number(Numeric {
                 value: 3.5,
-                is_integer: false
+                is_integer: false,
+                has_sign: false
             })
         );
     }
@@ -1588,7 +1598,8 @@ mod tests {
             tokens[0],
             Token::Number(Numeric {
                 value: -5.0,
-                is_integer: true
+                is_integer: true,
+                has_sign: true
             })
         );
     }
@@ -1602,7 +1613,8 @@ mod tests {
             tokens[0],
             Token::Number(Numeric {
                 value: 1000.0,
-                is_integer: false
+                is_integer: false,
+                has_sign: false
             })
         );
     }
@@ -1616,7 +1628,8 @@ mod tests {
             tokens[0],
             Token::Number(Numeric {
                 value: 150.0,
-                is_integer: false
+                is_integer: false,
+                has_sign: false
             })
         );
     }
@@ -1629,7 +1642,8 @@ mod tests {
             tokens[0],
             Token::Percentage(Numeric {
                 value: 50.0,
-                is_integer: true
+                is_integer: true,
+                has_sign: false
             })
         );
     }
@@ -1643,7 +1657,8 @@ mod tests {
             Token::Dimension(
                 Numeric {
                     value: 10.0,
-                    is_integer: true
+                    is_integer: true,
+                    has_sign: false
                 },
                 "px".to_string(),
             )
@@ -1659,7 +1674,8 @@ mod tests {
             Token::Dimension(
                 Numeric {
                     value: 1.5,
-                    is_integer: false
+                    is_integer: false,
+                    has_sign: false
                 },
                 "em".to_string(),
             )
@@ -1675,7 +1691,8 @@ mod tests {
             Token::Dimension(
                 Numeric {
                     value: -30.0,
-                    is_integer: true
+                    is_integer: true,
+                    has_sign: true
                 },
                 "deg".to_string(),
             )
@@ -1690,7 +1707,8 @@ mod tests {
             tokens[0],
             Token::Number(Numeric {
                 value: 5.0,
-                is_integer: true
+                is_integer: true,
+                has_sign: true
             })
         );
     }
@@ -1703,7 +1721,8 @@ mod tests {
             tokens[0],
             Token::Number(Numeric {
                 value: 0.5,
-                is_integer: false
+                is_integer: false,
+                has_sign: false
             })
         );
     }
@@ -1808,7 +1827,8 @@ mod tests {
     fn unicode_range_disabled_by_default() {
         // §4.3.1 L782-783: default unicode_ranges_allowed=false.
         // `U+1234` → `U` ident-start → Ident("U") (`+` stops ident seq);
-        // then `+1234` → starts_with_number (`+`+digit) → Number(1234).
+        // then `+1234` → starts_with_number (`+`+digit) → Number(1234)。
+        // 源文写了 `+`，故 has_sign = true（§4.3.13 第 7 步的 sign）。
         let tokens = CssTokenizer::collect("U+1234");
         assert_eq!(tokens.len(), 2);
         assert_eq!(tokens[0], Token::Ident("U".to_string()));
@@ -1816,9 +1836,32 @@ mod tests {
             tokens[1],
             Token::Number(Numeric {
                 value: 1234.0,
-                is_integer: true
+                is_integer: true,
+                has_sign: true
             })
         );
+    }
+
+    #[test]
+    fn numeric_has_sign_flag() {
+        // §4.3.13 step 7：sign 必须随 token 暴露——An+B（§7）靠它区分
+        // `<signed-integer>` / `<signless-integer>`，否则 `n + 5`（合法）与
+        // `n 5`（非法）在 token 层完全相同。
+        let sign_of = |input: &str| match &CssTokenizer::collect(input)[0] {
+            Token::Number(n) | Token::Percentage(n) => n.has_sign,
+            Token::Dimension(n, _) => n.has_sign,
+            other => panic!("unexpected token for {input:?}: {other:?}"),
+        };
+        assert!(!sign_of("5"), "5 无符号");
+        assert!(sign_of("+5"), "+5 带符号");
+        assert!(sign_of("-5"), "-5 带符号");
+        assert!(!sign_of("1e3"), "1e3 无符号（指数里的 + 不算，见下）");
+        assert!(!sign_of("1e+3"), "指数字符里的 + 不是首符号");
+        assert!(sign_of("+1e3"), "+1e3 首符号");
+        assert!(!sign_of("50%"), "50% 无符号");
+        assert!(sign_of("-50%"), "-50% 带符号");
+        assert!(!sign_of("10px"), "10px 无符号");
+        assert!(sign_of("+10px"), "+10px 带符号");
     }
 
     #[test]
