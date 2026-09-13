@@ -168,9 +168,17 @@ impl CssTokenizer {
                         self.consume(); // consume second `-`
                         self.consume(); // consume `>`
                         Token::Cdc
-                    } else if self.would_start_ident_sequence_at(0) {
+                    } else if self.peek(0) == Some('-') || self.would_start_ident_sequence_at(0) {
                         // §4.3.1: `-` starting an ident sequence → reconsume
                         // and consume an ident-like token.
+                        //
+                        // §4.3.9 "would start an identifier" 的第一个子句是
+                        // 「`-` 后面还是 `-`」→ 一定是 ident。此处 `c`（第一个
+                        // `-`）已被主循环消费，故 `would_start_ident_sequence_at(0)`
+                        // 从**第二个**字符起算，看不到「`-`+`-`」这一子句——
+                        // 必须在此显式补上，否则裸 `--` / `--0` 会被切成
+                        // Delim('-')（WPT selectors parse-part.html 的
+                        // `::part(--)` / `::part(--0)` 依赖它们是合法 ident）。
                         self.reconsume();
                         self.consume_an_ident_like_token()
                     } else {
@@ -1311,6 +1319,29 @@ mod tests {
         assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Delim('@')));
         assert!(matches!(tokens[1], Token::Whitespace));
+    }
+
+    #[test]
+    fn double_dash_is_ident() {
+        // §4.3.9 第一个子句：`-` 后面还是 `-` → 以 ident 序列开始
+        // （§4.3.1 的 `-` 分支必须带上这一子句）。回归自 WPT selectors
+        // parse-part.html 的 `::part(--)` / `::part(--0)`：它们要求 `--`
+        // 与 `--0` 是合法 ident。
+        for (input, expected) in [("--", "--"), ("--0", "--0"), ("--foo", "--foo")] {
+            let tokens = CssTokenizer::collect(input);
+            assert_eq!(tokens.len(), 1, "{input}: expected a single token");
+            assert!(
+                matches!(&tokens[0], Token::Ident(s) if s == expected),
+                "{input}: expected Ident({expected:?}), got {:?}",
+                tokens[0]
+            );
+        }
+        // `-` 后面既非 `-` 也非 ident-start → 仍是 delim
+        let tokens = CssTokenizer::collect("- ");
+        assert!(matches!(tokens[0], Token::Delim('-')));
+        // `-->` 仍优先按 CDC（§4.3.1 的 CDC 子句在 ident 判定之前）
+        let tokens = CssTokenizer::collect("-->");
+        assert!(matches!(tokens[0], Token::Cdc));
     }
 
     #[test]
